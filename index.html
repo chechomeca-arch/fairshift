@@ -27,7 +27,7 @@ const DATA_DOC = doc(db, 'fairshift', 'data');
 
 // ── PIN DE ADMIN ─────────────────────────────────────────────
 // Cambia este PIN por el que quieras. Solo tú lo sabes.
-const ADMIN_PIN = '050320';
+const ADMIN_PIN = '1234';
 
 // ── Estado de sesión ─────────────────────────────────────────
 let isAdmin = false;
@@ -1315,7 +1315,7 @@ let jornadaExpandedRows=new Set();
 window.onload=async function(){
   initTheme();
   const d=new Date(),day=d.getDay(),diff=d.getDate()-day+(day===0?-6:1);
-  document.getElementById('weekStartDate').valueAsDate=new Date(new Date().setDate(diff));
+  const _wd=new Date();_wd.setDate(diff);document.getElementById('weekStartDate').value=dateToStr(_wd);
   setupHotkeys();
   // Load from Firebase (or localStorage fallback)
   if(typeof window.loadData==='function'){
@@ -1414,6 +1414,30 @@ function restoreDataJSON(input){
 
 // ─── UTILIDADES ──────────────────────────────────────────────────────────
 function t2m(s){const[h,m]=s.split(':').map(Number);return h*60+m;}
+
+// ── UTILIDADES DE FECHA (timezone-safe para UTC+1/+2 España) ─────────────────
+// Nunca usar .toISOString() sobre fechas construidas con new Date(year,m,d)
+// porque en UTC+1/+2 da el día anterior. Usar siempre estas funciones.
+function dateToStr(d){
+  // Convierte un objeto Date local a 'YYYY-MM-DD' sin conversión UTC
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function ymdToStr(year,month,day){
+  // Construye 'YYYY-MM-DD' directamente sin pasar por Date.toISOString()
+  return year+'-'+String(month+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+}
+function strToLocalDate(dateStr){
+  // Parsea 'YYYY-MM-DD' como fecha LOCAL (no UTC) para evitar desfase en UTC+1/+2
+  const[y,m,d]=dateStr.split('-').map(Number);
+  return new Date(y,m-1,d);
+}
+function getDayOfWeek(dateStr){
+  // Devuelve getDay() correcto para una fecha string 'YYYY-MM-DD' en cualquier TZ
+  return strToLocalDate(dateStr).getDay();
+}
+function isWEstr(dateStr){
+  const d=getDayOfWeek(dateStr); return d===0||d===6;
+}
 function m2t(m){const h=Math.floor(m/60),min=Math.round(m%60);return String(h).padStart(2,'0')+':'+String(min).padStart(2,'0');}
 function formatMinDiff(d){const sign=d>=0?'+':'-';const abs=Math.abs(d);const h=Math.floor(abs/60),m=abs%60;return sign+(h?h+'h ':'')+m+'min';}
 function formatMinAbs(d){const abs=Math.abs(d);const h=Math.floor(abs/60),m=abs%60;return (h?h+'h ':'')+m+'min';}
@@ -1452,7 +1476,7 @@ function addEmployee(){
   if(ml){
     const times=ml.split('|').slice(1);const sd=new Date('2026-02-16');let cnt=0;
     times.forEach((time,i)=>{
-      const d=new Date(sd);d.setDate(sd.getDate()+i);const ds=d.toISOString().split('T')[0];
+      const d=strToLocalDate(sd);d.setDate(d.getDate()+i);const ds=dateToStr(d);
       if(!appData.shifts.some(s=>s.employee===name&&s.date===ds&&s.time===time)){appData.shifts.push({id:Date.now()+Math.random(),employee:name,date:ds,time});cnt++;}
     });
     if(cnt>0)Swal.fire({toast:true,position:'top-end',icon:'success',title:'¡Encontrada!',text:cnt+' turnos importados.',timer:2000});
@@ -1517,7 +1541,7 @@ function confirmDbPicker(){
     if(!appData.employees.includes(name)){appData.employees.push(name);appData.employeeColors[name]='#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');ae++;}
     const ml=FULL_ROTA_DB.find(line=>nameMatch(name,line.split('|')[0]));
     if(ml){ml.split('|').slice(1).forEach((time,i)=>{
-      const d=new Date(sd);d.setDate(sd.getDate()+i);const ds=d.toISOString().split('T')[0];
+      const d=strToLocalDate(sd);d.setDate(d.getDate()+i);const ds=dateToStr(d);
       if(!appData.shifts.some(s=>s.employee===name&&s.date===ds&&s.time===time)){appData.shifts.push({id:Date.now()+Math.random(),employee:name,date:ds,time});as++;}else sk++;
     });}
   });
@@ -1578,8 +1602,8 @@ function importJornadaOnly(){
     const weekShifts=appData.shifts
       .filter(s=>s.employee===emp)
       .filter(s=>{
-        const d=new Date(s.date);
-        const end=new Date(sd);end.setDate(sd.getDate()+6);
+        const d=strToLocalDate(s.date);
+        const end=strToLocalDate(sd);end.setDate(end.getDate()+6);
         return d>=sd&&d<=end;
       })
       .sort((a,b)=>a.date.localeCompare(b.date));
@@ -1677,7 +1701,7 @@ function commitRoster(){
   tempImportData.forEach(item=>{
     if(item.isNew&&!appData.employees.includes(item.employee)){appData.employees.push(item.employee);appData.employeeColors[item.employee]='#'+Math.floor(Math.random()*16777215).toString(16);}
     // ── CAMBIO: guardar entryTime automáticamente cuando existe ──
-    let ti=0;for(let i=0;i<7;i++){if(item.workDays[i]&&ti<item.extractedTimes.length){const time=item.extractedTimes[ti];const d=new Date(sd);d.setDate(sd.getDate()+i);const ds=d.toISOString().split('T')[0];if(!appData.shifts.some(s=>s.employee===item.employee&&s.date===ds&&s.time===time)){const shift={id:Date.now()+Math.random(),employee:item.employee,date:ds,time};if(item.entryTimes&&item.entryTimes[ti]){shift.entryTime=item.entryTimes[ti];}appData.shifts.push(shift);count++;}ti++;}}
+    let ti=0;for(let i=0;i<7;i++){if(item.workDays[i]&&ti<item.extractedTimes.length){const time=item.extractedTimes[ti];const d=strToLocalDate(sd);d.setDate(d.getDate()+i);const ds=dateToStr(d);if(!appData.shifts.some(s=>s.employee===item.employee&&s.date===ds&&s.time===time)){const shift={id:Date.now()+Math.random(),employee:item.employee,date:ds,time};if(item.entryTimes&&item.entryTimes[ti]){shift.entryTime=item.entryTimes[ti];}appData.shifts.push(shift);count++;}ti++;}}
   });
   saveData();closeWizard();updateUI();Swal.fire('Hecho',count+' turnos importados.','success');
   document.getElementById('rawTextArea').value='';
@@ -1686,7 +1710,7 @@ function commitRoster(){
 // ─── AÑADIR TURNO MANUAL ──────────────────────────────────────────────────
 function openAddShiftModal(){
   document.getElementById('addShiftEmployee').innerHTML=appData.employees.map(e=>'<option>'+e+'</option>').join('');
-  document.getElementById('addShiftDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('addShiftDate').value=dateToStr(new Date());
   document.getElementById('addShiftEntry').value='';
   document.getElementById('addShiftTime').value='22:30';
   document.getElementById('addShiftPreview').classList.add('hidden');
@@ -1813,7 +1837,7 @@ let cargaTab = 'ranking';
 let weekendChartInst = null;
 
 // ── helpers ──────────────────────────────────────────────────
-function isWE(dateStr){ const d=new Date(dateStr+'T00:00:00').getDay(); return d===0||d===6; }
+function isWE(dateStr){ return isWEstr(dateStr); }
 function fmtMin(m){
   if(m===0)return '0min';
   const sign=m<0?'−':'+';
@@ -2051,7 +2075,7 @@ function renderOverviewGrid(){
             cell.style.background='transparent';
           } else {
             const dt=new Date(year,0,1+idx);
-            const ds=dt.toISOString().split('T')[0];
+            const ds=dateToStr(dt);
             const info=byDate[ds];
             if(!info){
               cell.style.background='#e5e7eb';
@@ -2066,7 +2090,7 @@ function renderOverviewGrid(){
               }
               if(info.isWE){ cell.style.outline='1.5px solid #7c3aed'; cell.style.outlineOffset='0.5px'; cell.style.borderRadius='2px'; }
               // tooltip
-              const dow2=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][dt.getDay()];
+              const dow2=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][dt.getDay()]; // dt is local Date — safe
               const diffStr=diff===0?'Exacto 5h':diff>0?'+'+fmtMinAbs(diff)+' de más':'−'+fmtMinAbs(Math.abs(diff))+' de menos';
               cell.title=dow2+' '+ds+'\n'+diffStr+(info.isWE?'\n🌙 Fin de semana':'');
             }
@@ -2166,7 +2190,7 @@ function renderOverviewDowmap(){
     empDow[emp]={};
     DOW_ORDER.forEach(d=>{ empDow[emp][d]={sum:0,count:0}; });
     appData.shifts.filter(s=>s.employee===emp&&s.entryTime).forEach(s=>{
-      const dow=new Date(s.date+'T00:00:00').getDay();
+      const dow=getDayOfWeek(s.date);
       const diff=t2m(s.time)-t2m(s.entryTime)-std;
       empDow[emp][dow].sum+=diff;
       empDow[emp][dow].count++;
@@ -2435,7 +2459,7 @@ function renderCalendar(){
         if(idx<0||idx>=(isLeapYear(year)?366:365)){grid[w][d]=null;}
         else{
           const dt=new Date(year,0,1+idx);
-          grid[w][d]=dt.toISOString().split('T')[0];
+          grid[w][d]=dateToStr(dt);
         }
       }
     }
@@ -3057,7 +3081,7 @@ function updateCharts(labels,dataAvg,dataPie,filtered,dataRanking){
   if(charts.trend)charts.trend.destroy();
   const byWeek={};
   // ── CAMBIO: en tendencia también >1320 ──
-  filtered.forEach(s=>{if(t2m(s.time)<=1320)return;const d=new Date(s.date);const mon=new Date(d);mon.setDate(d.getDate()-((d.getDay()+6)%7));const wk=mon.toISOString().split('T')[0];byWeek[wk]=(byWeek[wk]||0)+1;});
+  filtered.forEach(s=>{if(t2m(s.time)<=1320)return;const d=strToLocalDate(s.date);const mon=new Date(d);mon.setDate(d.getDate()-((d.getDay()+6)%7));const wk=dateToStr(mon);byWeek[wk]=(byWeek[wk]||0)+1;});
   const trendL=Object.keys(byWeek).sort(),trendD=trendL.map(w=>byWeek[w]);
   charts.trend=new Chart(document.getElementById('trendChart'),{type:'line',data:{labels:trendL,datasets:[{label:'Cierres/semana',data:trendD,borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.1)',tension:0.4,fill:true,pointRadius:5,pointBackgroundColor:'#ef4444',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{color:tc,stepSize:1},grid:{color:gc}},x:{ticks:{color:tc},grid:{display:false}}},plugins:{legend:{labels:{color:tc}}}}});
 
@@ -3201,7 +3225,7 @@ function renderCoverageCalendar(){
         cell.style.cssText = 'width:18px;height:18px;border-radius:3px;cursor:default;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;position:relative;transition:transform .1s';
 
         const isWknd = d===5||d===6;
-        const dateStr = dt.toISOString().split('T')[0];
+        const dateStr = dateToStr(dt);
         const dayShiftCount = allShifts.filter(s=>s.date===dateStr).length;
 
         if(isToday && dt.toDateString()===new Date().toDateString()){
@@ -3575,7 +3599,7 @@ async function downloadJornadaIndividualPDF(emp){
     y += 4;
 
     const tableBody = j.byDay.map(d=>{
-      const dow = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][new Date(d.date+'T00:00:00').getDay()];
+      const dow = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][getDayOfWeek(d.date)];
       const isWe = dow==='Sáb'||dow==='Dom';
       return [
         d.date+' ('+dow+')',
@@ -3615,7 +3639,7 @@ async function downloadJornadaIndividualPDF(emp){
     // Group by ISO week
     const byWeek = {};
     j.byDay.forEach(d=>{
-      const dt = new Date(d.date+'T00:00:00');
+      const dt = strToLocalDate(d.date);
       const wk = getISOWeek(dt);
       if(!byWeek[wk]) byWeek[wk]={ week:wk, days:0, over:0, under:0, balance:0 };
       byWeek[wk].days++;
@@ -3908,7 +3932,7 @@ async function downloadJornadaGlobalPDF(){
     const tmpEmpChart = new Chart(ctx,{
       type:'bar',
       data:{
-        labels:j.byDay.map(d=>{const dt=new Date(d.date+'T00:00:00');return['Do','Lu','Ma','Mi','Ju','Vi','Sa'][dt.getDay()]+' '+d.date.slice(8);}),
+        labels:j.byDay.map(d=>{const dt=strToLocalDate(d.date);return['Do','Lu','Ma','Mi','Ju','Vi','Sa'][dt.getDay()]+' '+d.date.slice(8);}),
         datasets:[{label:'Diff (min)',data:empDiffs,backgroundColor:empColors,borderRadius:2}]
       },
       options:{animation:false,plugins:{legend:{display:false}},scales:{

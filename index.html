@@ -27,14 +27,14 @@ const DATA_DOC = doc(db, 'fairshift', 'data');
 
 // ── PIN DE ADMIN ─────────────────────────────────────────────
 // Cambia este PIN por el que quieras. Solo tú lo sabes.
-const ADMIN_PIN = '050320';
+const ADMIN_PIN = '1234';
 
 // ── Estado de sesión ─────────────────────────────────────────
 let isAdmin = false;
 let _firestoreLoaded = false;
 
 // ── Guardar en Firestore (solo admin) ────────────────────────
-window.saveData = async function(){
+window._firebaseSave = async function(){
   if(!isAdmin) return;
   try {
     const payload = JSON.stringify(window.appData);
@@ -118,7 +118,7 @@ window.loadData = async function(){
         if(parsed.employees && parsed.shifts){
           window.appData = parsed;
           if(typeof window._onFirebaseData==='function') window._onFirebaseData(parsed);
-          await window.saveData(); // subimos a Firestore
+          await window._firebaseSave(); // subimos a Firestore
           Swal.fire({toast:true,position:'top-end',icon:'success',
             title:'✅ Datos migrados a la nube',showConfirmButton:false,timer:2500});
         }
@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 <meta name="theme-color" content="#4f46e5">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 * { box-sizing: border-box; }
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg);
   color: var(--text);
   transition: background .3s, color .3s;
@@ -288,8 +288,8 @@ body {
   line-height: 1.5;
 }
 
-.mono { font-family: 'DM Mono', monospace; }
-.syne { font-family: 'Syne', sans-serif; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+.jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
 
 /* ── SCROLLBARS ─────────────────────────────────── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -319,7 +319,7 @@ header {
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
-  font-family: 'Syne', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 700;
   font-size: 13px;
   padding: 8px 18px;
@@ -373,7 +373,7 @@ header {
 .kpi-rose::after    { background: #ef4444; }
 
 .kpi-value {
-  font-family: 'Syne', sans-serif;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 2rem;
   font-weight: 800;
   letter-spacing: -1.5px;
@@ -387,15 +387,15 @@ header {
   letter-spacing: .06em;
   color: var(--text-3);
   margin-bottom: .3rem;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* ── SECTION HEADERS ────────────────────────────── */
 .section-title {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
   font-size: 15px;
-  letter-spacing: -.3px;
+  letter-spacing: -.4px;
   color: var(--text);
 }
 
@@ -426,7 +426,7 @@ header {
   border-radius: 9999px;
   font-size: 10px;
   font-weight: 700;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   letter-spacing: .03em;
 }
 .badge-red     { background: #fee2e2; color: #b91c1c; }
@@ -451,7 +451,7 @@ header {
   justify-content: center;
   font-weight: 900;
   font-size: 12px;
-  font-family: 'DM Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   flex-shrink: 0;
 }
 .score-high { background: rgba(16,185,129,.12); color: #059669; border: 2px solid rgba(16,185,129,.3); }
@@ -505,7 +505,7 @@ header {
   padding: 7px 12px;
   border: none;
   border-radius: 7px;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
@@ -540,7 +540,7 @@ header {
   white-space: normal;
   text-align: center;
   line-height: 1.4;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 [data-tooltip]:hover::after { opacity: 1; }
 
@@ -550,21 +550,21 @@ header {
   background: rgba(239,68,68,.1); color: #dc2626;
   border: 1px solid rgba(239,68,68,.25);
   border-radius: 9999px; padding: 2px 9px;
-  font-size: 11px; font-weight: 700; font-family: 'DM Mono', monospace;
+  font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
 }
 .pill-under {
   display: inline-flex; align-items: center; gap: 3px;
   background: rgba(16,185,129,.1); color: #059669;
   border: 1px solid rgba(16,185,129,.25);
   border-radius: 9999px; padding: 2px 9px;
-  font-size: 11px; font-weight: 700; font-family: 'DM Mono', monospace;
+  font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
 }
 .pill-balanced {
   display: inline-flex; align-items: center; gap: 3px;
   background: rgba(99,102,241,.1); color: #4f46e5;
   border: 1px solid rgba(99,102,241,.25);
   border-radius: 9999px; padding: 2px 9px;
-  font-size: 11px; font-weight: 700; font-family: 'DM Mono', monospace;
+  font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
 }
 .dark .pill-over     { background: rgba(239,68,68,.12); color: #fca5a5; border-color: rgba(239,68,68,.2); }
 .dark .pill-under    { background: rgba(16,185,129,.12); color: #6ee7b7; border-color: rgba(16,185,129,.2); }
@@ -580,7 +580,7 @@ header {
   transition: all .2s;
   border: 2px solid transparent;
   user-select: none;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .day-on {
   background: #10b981; color: #fff;
@@ -599,7 +599,7 @@ header {
   border: 1px solid var(--border);
   background: var(--surface2);
   font-size: 10px;
-  font-family: 'DM Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   color: var(--text-3);
   margin-left: 4px;
 }
@@ -638,7 +638,7 @@ header {
   color: var(--surface);
   font-size: 11px; font-weight: 700;
   padding: 4px 10px; border-radius: 6px; white-space: nowrap;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* ── FILTERS ─────────────────────────────────────── */
@@ -652,7 +652,7 @@ header {
   cursor: pointer;
   transition: all .2s;
   border: 1px solid var(--border);
-  font-family: 'Syne', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .filter-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px var(--accent-glow); }
 
@@ -728,7 +728,7 @@ header {
 .cal-tip {
   position: fixed;
   background: var(--text); color: var(--surface);
-  font-size: 11px; font-family: 'Outfit', sans-serif;
+  font-size: 11px; font-family: 'Inter', sans-serif;
   padding: 8px 12px; border-radius: var(--radius-sm);
   pointer-events: none; z-index: 9999;
   line-height: 1.6; max-width: 200px;
@@ -837,7 +837,7 @@ input[type=color] { border-radius: var(--radius-sm) !important; }
   text-transform: uppercase;
   letter-spacing: .1em;
   color: var(--text-3);
-  font-family: 'Syne', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* ── ACCENT DOT ──────────────────────────────────── */
@@ -894,7 +894,7 @@ body.is-admin .admin-only.block-el { display: block !important; }
   border-radius: 10px;
   cursor: pointer;
   transition: all .18s;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 600;
   font-size: 13px;
   color: var(--text-2);
@@ -927,7 +927,7 @@ body.is-admin .admin-only.block-el { display: block !important; }
   box-shadow: 0 2px 8px var(--accent-glow);
 }
 .nav-section-label {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: .12em;
@@ -943,7 +943,7 @@ body.is-admin .admin-only.block-el { display: block !important; }
   border-radius: 10px;
   cursor: pointer;
   transition: all .18s;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 700;
   font-size: 13px;
   background: var(--accent-dim);
@@ -1027,7 +1027,7 @@ body.is-admin .admin-only.block-el { display: block !important; }
       <i class="fas fa-chart-pie text-white text-xs"></i>
     </div>
     <div style="flex:1">
-      <div class="syne font-extrabold text-sm" style="color:var(--text);letter-spacing:-.3px">Fair<span style="color:var(--accent)">Shift</span></div>
+      <div class="jakarta font-extrabold text-sm" style="color:var(--text);letter-spacing:-.3px">Fair<span style="color:var(--accent)">Shift</span></div>
       <div class="mono text-[9px]" style="color:var(--text-3)">primark shifter · v24</div>
     </div>
     <button onclick="closeSidebar()" style="width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text-3);display:flex;align-items:center;justify-content:center;cursor:pointer">
@@ -1066,6 +1066,10 @@ body.is-admin .admin-only.block-el { display: block !important; }
     <a class="nav-item" onclick="navTo('sec-historial')">
       <div class="nav-icon"><i class="fas fa-history"></i></div>
       <span>Historial de turnos</span>
+    </a>
+    <a class="nav-item" onclick="navTo('sec-rota')">
+      <div class="nav-icon"><i class="fas fa-calendar-alt"></i></div>
+      <span>Rota mensual</span>
     </a>
 
     <div class="nav-section-label">Admin</div>
@@ -1124,7 +1128,7 @@ body.is-admin .admin-only.block-el { display: block !important; }
     </button>
     <div style="width:1px;height:20px;background:var(--border)"></div>
     <div>
-      <h1 class="syne font-extrabold text-base leading-none tracking-tight" style="color:var(--text)">
+      <h1 class="jakarta font-extrabold text-base leading-none tracking-tight" style="color:var(--text)">
         Fair<span style="color:var(--accent)">Shift</span>
       </h1>
       <span class="mono text-[9px]" style="color:var(--text-3)">v24 · primark shifter</span>
@@ -1133,19 +1137,19 @@ body.is-admin .admin-only.block-el { display: block !important; }
   <div class="flex gap-2 items-center">
     <!-- Admin badge / login -->
     <span id="adminBadge" onclick="window.promptAdminLogin()"
-      class="syne text-[10px] font-bold px-2 py-1 rounded-full cursor-pointer select-none"
+      class="jakarta text-[10px] font-bold px-2 py-1 rounded-full cursor-pointer select-none"
       style="background:var(--surface2);color:var(--text-3);border:1px solid var(--border)">
       👁 Solo lectura
     </span>
     <button id="logoutBtn" onclick="window.logoutAdmin()"
-      class="admin-only syne text-[10px] font-bold px-2 py-1 rounded-full transition"
+      class="admin-only jakarta text-[10px] font-bold px-2 py-1 rounded-full transition"
       style="color:var(--accent);border:1px solid var(--accent);background:var(--accent-dim)">
       Salir
     </button>
     <div id="syncDot" title="Conectado a la nube"
       class="w-2 h-2 rounded-full animate-pulse"
       style="display:none;background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.6)"></div>
-    <div id="activeFilterBadge" class="hidden items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full cursor-pointer syne"
+    <div id="activeFilterBadge" class="hidden items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full cursor-pointer jakarta"
       style="background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent)"
       onclick="toggleFilterPanel()">
       <i class="fas fa-filter"></i><span id="activeFilterCount">0</span> filtros
@@ -1176,10 +1180,10 @@ body.is-admin .admin-only.block-el { display: block !important; }
     <i class="fas fa-eye text-sm" style="color:#6366f1"></i>
   </div>
   <div class="flex-1">
-    <div class="syne font-bold text-xs" style="color:#4f46e5">Modo visualización · Solo lectura</div>
+    <div class="jakarta font-bold text-xs" style="color:#4f46e5">Modo visualización · Solo lectura</div>
     <div class="text-[10px]" style="color:var(--text-3)">Los datos se actualizan en tiempo real cuando el admin publica cambios.</div>
   </div>
-  <button onclick="window.promptAdminLogin()" class="syne text-xs font-bold px-3 py-1.5 rounded-lg transition" style="background:rgba(99,102,241,.1);color:#4f46e5;border:1px solid rgba(99,102,241,.2)">
+  <button onclick="window.promptAdminLogin()" class="jakarta text-xs font-bold px-3 py-1.5 rounded-lg transition" style="background:rgba(99,102,241,.1);color:#4f46e5;border:1px solid rgba(99,102,241,.2)">
     🔐 Soy el admin
   </button>
 </div>
@@ -1330,7 +1334,7 @@ body.is-admin .admin-only.block-el { display: block !important; }
 <!-- TABLA ANÁLISIS -->
 <div id="sec-analisis" class="scroll-mt-20"><div class="card overflow-hidden">
   <div class="p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex flex-col md:flex-row justify-between items-center gap-3">
-    <h3 class="syne text-sm flex items-center gap-2" style="font-weight:800;color:var(--text)"><i class="fas fa-table"></i>Análisis de Salidas<span id="tableFilteredNote" class="hidden text-xs font-normal text-indigo-500">(filtrado)</span></h3>
+    <h3 class="jakarta text-sm flex items-center gap-2" style="font-weight:800;color:var(--text)"><i class="fas fa-table"></i>Análisis de Salidas<span id="tableFilteredNote" class="hidden text-xs font-normal text-indigo-500">(filtrado)</span></h3>
     <div class="flex gap-2 text-xs flex-wrap justify-end">
       <button onclick="openCompareModal()"  class="bg-purple-100 text-purple-700 border border-purple-200 px-3 py-1.5 rounded font-bold hover:bg-purple-200 transition"><i class="fas fa-balance-scale"></i> VS</button>
       <button onclick="generateAIPrompt()"  class="bg-purple-100 text-purple-700 border border-purple-200 px-3 py-1.5 rounded font-bold hover:bg-purple-200 transition"><i class="fas fa-robot"></i> IA</button>
@@ -1612,6 +1616,66 @@ body.is-admin .admin-only.block-el { display: block !important; }
 <!-- Tooltip flotante del calendario -->
 <div id="calTip" class="cal-tip"></div></div>
 
+<!-- ══════════════════════════════════════════
+     MÓDULO: ROTA MENSUAL POR EMPLEADO
+══════════════════════════════════════════ -->
+<div id="sec-rota" class="scroll-mt-20">
+<div class="card overflow-hidden" style="border-left:4px solid #6366f1">
+  <div class="p-4 flex justify-between items-center cursor-pointer" onclick="toggleRota()" style="border-bottom:1px solid var(--border)">
+    <div>
+      <h3 class="jakarta font-extrabold text-sm flex items-center gap-2" style="color:var(--text)">
+        <i class="fas fa-calendar-alt" style="color:#6366f1"></i>
+        Rota Mensual
+        <span id="rotaBadge" class="badge badge-indigo ml-1">—</span>
+      </h3>
+      <p class="text-[10px] mt-0.5" style="color:var(--text-3)">Horario planificado por empleado · navega mes a mes</p>
+    </div>
+    <i id="rotaChevron" class="fas fa-chevron-down transition-transform" style="color:var(--text-3)"></i>
+  </div>
+
+  <div id="rotaPanel" class="hidden">
+
+    <!-- Nav mes + selector empleado -->
+    <div class="p-4 flex flex-wrap gap-3 items-center justify-between" style="border-bottom:1px solid var(--border);background:var(--surface2)">
+      <!-- Navegación mes -->
+      <div class="flex items-center gap-2">
+        <button onclick="rotaPrevMonth()" class="w-8 h-8 rounded-lg flex items-center justify-center transition" style="background:var(--surface);border:1px solid var(--border);color:var(--text-2)">
+          <i class="fas fa-chevron-left text-xs"></i>
+        </button>
+        <div id="rotaMonthLabel" class="jakarta font-bold text-sm px-3" style="color:var(--text);min-width:140px;text-align:center">—</div>
+        <button onclick="rotaNextMonth()" class="w-8 h-8 rounded-lg flex items-center justify-center transition" style="background:var(--surface);border:1px solid var(--border);color:var(--text-2)">
+          <i class="fas fa-chevron-right text-xs"></i>
+        </button>
+        <button onclick="rotaGoToday()" class="jakarta text-xs font-bold px-3 py-1.5 rounded-lg transition" style="background:var(--accent-dim);color:var(--accent);border:1px solid rgba(255,68,68,.2)">Hoy</button>
+      </div>
+      <!-- Selector vista -->
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-bold jakarta" style="color:var(--text-3)">Vista:</span>
+        <button onclick="setRotaView('todos')" id="rotaBtnTodos" class="jakarta text-xs font-bold px-3 py-1.5 rounded-lg transition" style="background:var(--accent);color:#fff">Todos</button>
+        <button onclick="setRotaView('individual')" id="rotaBtnIndividual" class="jakarta text-xs font-bold px-3 py-1.5 rounded-lg transition" style="background:var(--surface);border:1px solid var(--border);color:var(--text-2)">Individual</button>
+      </div>
+      <!-- Selector empleado (solo en vista individual) -->
+      <div id="rotaEmpSelector" class="hidden items-center gap-2">
+        <button onclick="rotaPrevEmp()" class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:var(--surface);border:1px solid var(--border);color:var(--text-2)">
+          <i class="fas fa-chevron-left text-xs"></i>
+        </button>
+        <div id="rotaEmpLabel" class="jakarta font-bold text-sm px-2" style="color:var(--text);min-width:120px;text-align:center">—</div>
+        <button onclick="rotaNextEmp()" class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:var(--surface);border:1px solid var(--border);color:var(--text-2)">
+          <i class="fas fa-chevron-right text-xs"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Leyenda de colores -->
+    <div id="rotaLegend" class="px-4 pt-3 pb-1 flex flex-wrap gap-2"></div>
+
+    <!-- Contenido del calendario -->
+    <div id="rotaContent" class="p-4"></div>
+
+  </div>
+</div>
+</div>
+
 <div id="sec-historial" class="scroll-mt-20"><!-- HISTORIAL -->
 <div class="card p-4">
   <div class="flex justify-between items-center mb-3">
@@ -1634,7 +1698,7 @@ body.is-admin .admin-only.block-el { display: block !important; }
 
 <div id="sec-admin" class="scroll-mt-20"><!-- ADMIN -->
 <div class="card overflow-hidden" style="border-left:4px solid var(--text-3)">
-  <div class="p-4 border-b dark:border-gray-700"><h3 class="syne text-sm flex items-center gap-2" style="font-weight:800;color:var(--text)"><i class="fas fa-cogs"></i>HERRAMIENTAS DE SISTEMA</h3></div>
+  <div class="p-4 border-b dark:border-gray-700"><h3 class="jakarta text-sm flex items-center gap-2" style="font-weight:800;color:var(--text)"><i class="fas fa-cogs"></i>HERRAMIENTAS DE SISTEMA</h3></div>
   <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="space-y-2">
       <h4 class="text-xs font-bold text-gray-500 uppercase">Backup / Restore</h4>
@@ -1979,6 +2043,10 @@ function navTo(sectionId){
       const p=document.getElementById('cargaPanel');
       if(p&&p.classList.contains('hidden')) toggleCarga();
     }
+    if(sectionId==='sec-rota'){
+      const p=document.getElementById('rotaPanel');
+      if(p&&p.classList.contains('hidden')) toggleRota();
+    }
     if(sectionId==='sec-historial'){
       const p=document.getElementById('historialPanel');
       if(p&&p.classList.contains('hidden')) toggleHistorial?.();
@@ -1987,7 +2055,7 @@ function navTo(sectionId){
 }
 function updateSidebarActiveItem(){
   // Highlight current section based on scroll position
-  const sections = ['sec-kpi','sec-insights','sec-analisis','sec-jornada','sec-carga','sec-historial','sec-admin'];
+  const sections = ['sec-kpi','sec-insights','sec-analisis','sec-jornada','sec-carga','sec-rota','sec-historial','sec-admin'];
   let current = sections[0];
   sections.forEach(id=>{
     const el=document.getElementById(id);
@@ -2065,10 +2133,12 @@ function openHeatmap(){openModal('detailedStatsModal');}
 function saveData(){
   if(!window._isAdmin) return; // viewers never write
   window.appData = appData;   // sincronizar antes de subir
-  if(typeof window.saveData==='function'){
-    window.saveData();
+  // Llamar a la versión Firebase (módulo async) almacenada en _firebaseSave
+  if(typeof window._firebaseSave === 'function'){
+    window._firebaseSave();
   } else {
-    localStorage.setItem('fairShift_v23_pro',JSON.stringify(appData));
+    // Fallback localStorage si Firebase no ha cargado aún
+    localStorage.setItem('fairShift_v23_pro', JSON.stringify(appData));
   }
 }
 function loadData(){
@@ -2099,7 +2169,7 @@ function restoreDataJSON(input){
       appData = data;
       window.appData = data;
       // Guardar en Firestore + localStorage
-      await window.saveData();
+      await window._firebaseSave();
       updateUI();
       Swal.fire({
         icon:'success',
@@ -2280,7 +2350,7 @@ function importJornadaOnly(){
 
   const lines=rawText.split('\n');
   const re=/([0-9]{1,2}:[0-9]{2})/g;
-  const sd=new Date(wv);
+  const sd=strToLocalDate(wv);
   let matched=0,updated=0,skipped=0,alreadyHad=0;
 
   appData.employees.forEach(emp=>{
@@ -2308,7 +2378,7 @@ function importJornadaOnly(){
       .filter(s=>s.employee===emp)
       .filter(s=>{
         const d=strToLocalDate(s.date);
-        const end=strToLocalDate(sd);end.setDate(end.getDate()+6);
+        const end=new Date(sd);end.setDate(sd.getDate()+6);
         return d>=sd&&d<=end;
       })
       .sort((a,b)=>a.date.localeCompare(b.date));
@@ -2406,7 +2476,7 @@ function commitRoster(){
   tempImportData.forEach(item=>{
     if(item.isNew&&!appData.employees.includes(item.employee)){appData.employees.push(item.employee);appData.employeeColors[item.employee]='#'+Math.floor(Math.random()*16777215).toString(16);}
     // ── CAMBIO: guardar entryTime automáticamente cuando existe ──
-    let ti=0;for(let i=0;i<7;i++){if(item.workDays[i]&&ti<item.extractedTimes.length){const time=item.extractedTimes[ti];const d=new Date(sd);d.setDate(d.getDate()+i);const ds=dateToStr(d);if(!appData.shifts.some(s=>s.employee===item.employee&&s.date===ds&&s.time===time)){const shift={id:Date.now()+Math.random(),employee:item.employee,date:ds,time};if(item.entryTimes&&item.entryTimes[ti]){shift.entryTime=item.entryTimes[ti];}appData.shifts.push(shift);count++;}ti++;}}
+    let ti=0;for(let i=0;i<7;i++){if(item.workDays[i]&&ti<item.extractedTimes.length){const time=item.extractedTimes[ti];const d=strToLocalDate(sd);d.setDate(d.getDate()+i);const ds=dateToStr(d);if(!appData.shifts.some(s=>s.employee===item.employee&&s.date===ds&&s.time===time)){const shift={id:Date.now()+Math.random(),employee:item.employee,date:ds,time};if(item.entryTimes&&item.entryTimes[ti]){shift.entryTime=item.entryTimes[ti];}appData.shifts.push(shift);count++;}ti++;}}
   });
   saveData();closeWizard();updateUI();Swal.fire('Hecho',count+' turnos importados.','success');
   document.getElementById('rawTextArea').value='';
@@ -4035,6 +4105,7 @@ function updateUI(){
   if(!document.getElementById('jornadaPanel').classList.contains('hidden'))renderJornadaPanel();
   if(!document.getElementById('cargaPanel').classList.contains('hidden'))renderCargaPanel();
   if(!document.getElementById('coveragePanel').classList.contains('hidden'))renderCoverageCalendar();
+  if(!document.getElementById('rotaPanel')?.classList.contains('hidden'))renderRotaMensual();
   // Always update the badge even when panel is collapsed
   renderCoverageBadgeOnly();
 
@@ -4710,7 +4781,276 @@ function getISOWeek(d){
   return y+'-W'+String(w).padStart(2,'0');
 }
 
-// ─── AI PROMPT ────────────────────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  MÓDULO: ROTA MENSUAL POR EMPLEADO
+// ═══════════════════════════════════════════════════════════════════════════
+
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DIAS_CORTO = ['L','M','X','J','V','S','D'];
+
+let rotaYear  = new Date().getFullYear();
+let rotaMonth = new Date().getMonth(); // 0-based
+let rotaView  = 'todos';   // 'todos' | 'individual'
+let rotaEmpIdx = 0;
+// Paleta de colores para horarios (entry→exit combinaciones)
+const ROTA_PALETTE = [
+  '#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6',
+  '#14b8a6','#f97316','#3b82f6','#ec4899','#84cc16',
+  '#06b6d4','#a855f7','#22c55e','#fb923c','#e11d48',
+  '#0ea5e9','#d946ef','#65a30d','#0891b2','#7c3aed'
+];
+
+function toggleRota(){
+  const panel = document.getElementById('rotaPanel');
+  const chev  = document.getElementById('rotaChevron');
+  if(!panel) return;
+  const opening = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden');
+  if(chev) chev.style.transform = opening ? 'rotate(180deg)' : '';
+  if(opening) renderRotaMensual();
+}
+
+function rotaPrevMonth(){
+  rotaMonth--;
+  if(rotaMonth < 0){ rotaMonth = 11; rotaYear--; }
+  renderRotaMensual();
+}
+function rotaNextMonth(){
+  rotaMonth++;
+  if(rotaMonth > 11){ rotaMonth = 0; rotaYear++; }
+  renderRotaMensual();
+}
+function rotaGoToday(){
+  const now = new Date();
+  rotaYear  = now.getFullYear();
+  rotaMonth = now.getMonth();
+  renderRotaMensual();
+}
+function setRotaView(v){
+  rotaView = v;
+  document.getElementById('rotaBtnTodos').style.background      = v==='todos' ? 'var(--accent)' : 'var(--surface)';
+  document.getElementById('rotaBtnTodos').style.color           = v==='todos' ? '#fff' : 'var(--text-2)';
+  document.getElementById('rotaBtnTodos').style.border          = v==='todos' ? 'none' : '1px solid var(--border)';
+  document.getElementById('rotaBtnIndividual').style.background = v==='individual' ? 'var(--accent)' : 'var(--surface)';
+  document.getElementById('rotaBtnIndividual').style.color      = v==='individual' ? '#fff' : 'var(--text-2)';
+  document.getElementById('rotaBtnIndividual').style.border     = v==='individual' ? 'none' : '1px solid var(--border)';
+  const sel = document.getElementById('rotaEmpSelector');
+  if(sel) sel.style.display = v==='individual' ? 'flex' : 'none';
+  renderRotaMensual();
+}
+function rotaPrevEmp(){
+  if(!appData.employees.length) return;
+  rotaEmpIdx = (rotaEmpIdx - 1 + appData.employees.length) % appData.employees.length;
+  renderRotaMensual();
+}
+function rotaNextEmp(){
+  if(!appData.employees.length) return;
+  rotaEmpIdx = (rotaEmpIdx + 1) % appData.employees.length;
+  renderRotaMensual();
+}
+
+// Construye un mapa turno→color basado en las combinaciones entrada/salida únicas
+function buildRotaColorMap(){
+  const combos = new Map(); // 'HH:MM→HH:MM' → colorIdx
+  let idx = 0;
+  appData.shifts.forEach(s => {
+    const key = (s.entryTime || '??:??') + '→' + s.time;
+    if(!combos.has(key)){ combos.set(key, idx % ROTA_PALETTE.length); idx++; }
+  });
+  return combos;
+}
+
+// Hexadecimal a RGB para calcular luminosidad
+function hexToRgbArr(hex){
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return [r,g,b];
+}
+function isDark(hex){
+  const [r,g,b] = hexToRgbArr(hex);
+  return (r*0.299 + g*0.587 + b*0.114) < 160;
+}
+// Color pastel (alpha 20%) para fondo claro
+function pastelColor(hex){
+  const [r,g,b] = hexToRgbArr(hex);
+  return `rgba(${r},${g},${b},0.13)`;
+}
+
+function renderRotaMensual(){
+  if(!appData.employees || !appData.shifts) return;
+
+  // Update badge
+  const shiftsThisMonth = appData.shifts.filter(s => {
+    const d = strToLocalDate(s.date);
+    return d.getFullYear()===rotaYear && d.getMonth()===rotaMonth;
+  });
+  const badge = document.getElementById('rotaBadge');
+  if(badge) badge.textContent = shiftsThisMonth.length + ' turnos';
+
+  // Month label
+  const label = document.getElementById('rotaMonthLabel');
+  if(label) label.textContent = MESES[rotaMonth] + ' ' + rotaYear;
+
+  // Build color map
+  const colorMap = buildRotaColorMap();
+
+  // Legend
+  const legendEl = document.getElementById('rotaLegend');
+  if(legendEl){
+    const usedCombos = new Map();
+    shiftsThisMonth.forEach(s => {
+      const key = (s.entryTime||'??:??') + '→' + s.time;
+      if(!usedCombos.has(key)) usedCombos.set(key, colorMap.get(key) ?? 0);
+    });
+    legendEl.innerHTML = [...usedCombos.entries()].map(([key, cidx]) => {
+      const color = ROTA_PALETTE[cidx];
+      return `<div style="display:inline-flex;align-items:center;gap:5px;background:${pastelColor(color)};
+        border:1px solid ${color}40;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:var(--text-2)">
+        <div style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0"></div>
+        ${key}
+      </div>`;
+    }).join('') || '<span style="font-size:11px;color:var(--text-3)">Sin turnos este mes</span>';
+  }
+
+  // Decide which employees to render
+  let empsToRender = appData.employees;
+  if(rotaView === 'individual'){
+    rotaEmpIdx = Math.min(rotaEmpIdx, appData.employees.length - 1);
+    empsToRender = [appData.employees[rotaEmpIdx]];
+    const empLabel = document.getElementById('rotaEmpLabel');
+    if(empLabel) empLabel.textContent = appData.employees[rotaEmpIdx] || '—';
+  }
+
+  const content = document.getElementById('rotaContent');
+  if(!content) return;
+
+  if(!appData.employees.length){
+    content.innerHTML = '<p style="text-align:center;color:var(--text-3);padding:2rem;font-size:13px">No hay empleados cargados.</p>';
+    return;
+  }
+
+  // Build days array for this month
+  const daysInMonth = new Date(rotaYear, rotaMonth + 1, 0).getDate();
+  // Day of week of day 1 (0=Sun,1=Mon... → convert to Mon-based 0-6)
+  const firstDow = (new Date(rotaYear, rotaMonth, 1).getDay() + 6) % 7; // 0=Lun
+
+  // Build shifts index: emp → date → shift
+  const idx = {};
+  appData.shifts.forEach(s => {
+    const d = strToLocalDate(s.date);
+    if(d.getFullYear()===rotaYear && d.getMonth()===rotaMonth){
+      if(!idx[s.employee]) idx[s.employee] = {};
+      idx[s.employee][s.date] = s;
+    }
+  });
+
+  let html = '';
+
+  empsToRender.forEach(emp => {
+    const empColor = appData.employeeColors?.[emp] || '#6366f1';
+    html += `
+    <div style="margin-bottom:24px">
+      <!-- Emp header -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:10px;height:10px;border-radius:50%;background:${empColor};flex-shrink:0"></div>
+        <span class="jakarta" style="font-weight:800;font-size:14px;color:var(--text)">${emp}</span>
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+        ${(() => {
+          const empShifts = Object.values(idx[emp]||{});
+          const total = empShifts.length;
+          const cierres = empShifts.filter(s=>t2m(s.time)>1320).length;
+          const finde = empShifts.filter(s=>isWE(s.date)).length;
+          return `<span style="font-size:11px;color:var(--text-3)">${total} turno${total!==1?'s':''}</span>
+            ${cierres ? `<span class="badge badge-red">${cierres} cierre${cierres!==1?'s':''}</span>` : ''}
+            ${finde   ? `<span class="badge badge-indigo">${finde} finde${finde!==1?'s':''}</span>` : ''}`;
+        })()}
+      </div>
+
+      <!-- Calendar grid -->
+      <div style="border-radius:10px;overflow:hidden;border:1px solid var(--border)">
+        <!-- Day-of-week headers -->
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);background:var(--surface2)">
+          ${DIAS_CORTO.map((d,i) => `
+            <div style="text-align:center;padding:6px 2px;font-size:10px;font-weight:800;
+              color:${i>=5?'#6366f1':'var(--text-3)'};font-family:'Plus Jakarta Sans',sans-serif;
+              border-bottom:1px solid var(--border);${i<6?'border-right:1px solid var(--border)':''}">
+              ${d}
+            </div>`).join('')}
+        </div>
+        <!-- Day cells grid -->
+        <div style="display:grid;grid-template-columns:repeat(7,1fr)">
+          ${/* Empty cells before day 1 */ Array.from({length:firstDow}).map((_,i) =>
+            `<div style="min-height:58px;${i<6?'border-right:1px solid var(--border)':''}border-bottom:1px solid var(--border);background:var(--surface2)"></div>`
+          ).join('')}
+          ${/* Day cells */ Array.from({length:daysInMonth}).map((_,dayIdx) => {
+            const dayNum  = dayIdx + 1;
+            const dateStr = dateToStr(new Date(rotaYear, rotaMonth, dayNum));
+            const shift   = idx[emp]?.[dateStr];
+            const dow     = (new Date(rotaYear, rotaMonth, dayNum).getDay() + 6) % 7; // 0=Lun
+            const isWEnd  = dow >= 5;
+            const isToday = dateStr === dateToStr(new Date());
+            const colPos  = (firstDow + dayIdx) % 7; // column 0-6
+            const isLastCol = colPos === 6;
+
+            let cellBg = 'var(--surface)';
+            let cellContent = '';
+            let textColor = 'var(--text-2)';
+
+            if(shift){
+              const key = (shift.entryTime||'??:??') + '→' + shift.time;
+              const cidx = colorMap.get(key) ?? 0;
+              const color = ROTA_PALETTE[cidx];
+              cellBg = pastelColor(color);
+              textColor = color;
+              const entry = shift.entryTime || '';
+              const exit  = shift.time;
+              cellContent = `
+                <div style="margin-top:3px">
+                  ${entry ? `<div style="font-size:10px;font-weight:700;color:${color};font-family:'JetBrains Mono',monospace;line-height:1.2">${entry}</div>` : ''}
+                  <div style="font-size:11px;font-weight:800;color:${color};font-family:'JetBrains Mono',monospace;line-height:1.2">${exit}</div>
+                  ${entry && shift.entryTime ? `<div style="font-size:9px;color:${color}99;margin-top:1px">${(() => {
+                    const mins = t2m(exit) - t2m(entry);
+                    if(mins<=0) return '';
+                    const h = Math.floor(mins/60), m = mins%60;
+                    return h + 'h' + (m ? m+'m' : '');
+                  })()}</div>` : ''}
+                </div>`;
+            }
+
+            return `<div style="
+              min-height:58px;
+              padding:4px 5px;
+              background:${isWEnd && !shift ? 'color-mix(in srgb,var(--surface2) 80%,#6366f108)' : cellBg};
+              border-bottom:1px solid var(--border);
+              ${!isLastCol ? 'border-right:1px solid var(--border);' : ''}
+              ${isToday ? 'outline:2px solid var(--accent);outline-offset:-2px;border-radius:2px;' : ''}
+              position:relative;
+            ">
+              <div style="
+                font-size:11px;font-weight:${isToday?'900':'700'};
+                color:${isToday ? 'var(--accent)' : isWEnd ? '#6366f1' : 'var(--text-3)'};
+                font-family:'Plus Jakarta Sans',sans-serif;line-height:1;
+              ">${dayNum}</div>
+              ${cellContent}
+            </div>`;
+          }).join('')}
+          ${/* Trailing empty cells to complete last row */ (() => {
+            const total = firstDow + daysInMonth;
+            const trailing = (7 - (total % 7)) % 7;
+            return Array.from({length:trailing}).map((_,i) =>
+              `<div style="min-height:58px;${i<trailing-1?'border-right:1px solid var(--border)':''}border-bottom:1px solid var(--border);background:var(--surface2)"></div>`
+            ).join('');
+          })()}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  content.innerHTML = html || '<p style="text-align:center;color:var(--text-3);padding:2rem;font-size:13px">Sin datos para este mes.</p>';
+}
+
 function generateAIPrompt(){
   const filtered=getFilteredShifts();
   const stats=calcStats(filtered);const advStats=calcAdvStats(filtered);

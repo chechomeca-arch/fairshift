@@ -4,14 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>FairShift 24.0 — Enterprise Pro</title>
-<script type="module">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
 // ═══════════════════════════════════════════════════════════════
-//  FIREBASE CONFIG — tu proyecto "shifter"
+//  FIREBASE CONFIG
 // ═══════════════════════════════════════════════════════════════
-import { initializeApp }                        from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getFirestore, doc, setDoc, onSnapshot, getDoc }
-                                                from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-
 const firebaseConfig = {
   apiKey:            "AIzaSyCD6sYzIePeOLK0pzg5ld8BYJzXYBd76Zs",
   authDomain:        "shifter-1e7a8.firebaseapp.com",
@@ -21,19 +19,18 @@ const firebaseConfig = {
   appId:             "1:92248510677:web:0491a6fb315d012689925c"
 };
 
-const fbApp = initializeApp(firebaseConfig);
-const db    = getFirestore(fbApp);
-const DATA_DOC = doc(db, 'fairshift', 'data');
+firebase.initializeApp(firebaseConfig);
+const db       = firebase.firestore();
+const DATA_DOC = db.collection('fairshift').doc('data');
 
-// ── PIN DE ADMIN ─────────────────────────────────────────────
-// Cambia este PIN por el que quieras. Solo tú lo sabes.
+// ── PIN DE ADMIN ──────────────────────────────────────────────
 const ADMIN_PIN = '1234';
 
-// ── Estado de sesión ─────────────────────────────────────────
+// ── Estado de sesión ──────────────────────────────────────────
 let isAdmin = false;
 let _firestoreLoaded = false;
 
-// ── Guardar en Firestore (solo admin) ────────────────────────
+// ── Guardar en Firestore ──────────────────────────────────────
 window._firebaseSave = async function(){
   if(!isAdmin) return;
   try {
@@ -41,12 +38,10 @@ window._firebaseSave = async function(){
     const CHUNK = 900000;
     const chunks = [];
     for(let i=0;i<payload.length;i+=CHUNK) chunks.push(payload.slice(i,i+CHUNK));
-    await setDoc(DATA_DOC, { chunks, updated: Date.now(), v: chunks.length, _adminToken: ADMIN_PIN });
-    // Backup local también
+    await DATA_DOC.set({ chunks, updated: Date.now(), v: chunks.length, _adminToken: ADMIN_PIN });
     localStorage.setItem('fairShift_v23_pro', payload);
-    // Punto verde parpadeante = guardado OK
     const dot = document.getElementById('syncDot');
-    if(dot){ dot.style.background='#22c55e'; setTimeout(()=>dot.style.background='#22c55e',500); }
+    if(dot){ dot.style.background='#22c55e'; }
     console.log('✅ Guardado en Firestore:', window.appData.shifts?.length, 'turnos');
   } catch(e){
     console.error('Firestore save error:', e);
@@ -63,28 +58,21 @@ window._firebaseSave = async function(){
 
 // ── Escuchar cambios en tiempo real ──────────────────────────
 function startRealtimeListener(){
-  onSnapshot(DATA_DOC, (snap) => {
-    if(!snap.exists()) return;
+  DATA_DOC.onSnapshot((snap) => {
+    if(!snap.exists) return;
     const d = snap.data();
     if(!d || !d.chunks) return;
     try {
       const payload = d.chunks.join('');
       const parsed  = JSON.parse(payload);
       if(!parsed.employees || !parsed.shifts) return;
-
-      // Solo actualizamos si los datos son DIFERENTES a los actuales
-      // (evita re-render cuando somos nosotros quienes guardamos)
       const currentStr = JSON.stringify(window.appData);
       if(payload === currentStr) return;
-
       window.appData = parsed;
       if(!window.appData.jornadaConfig) window.appData.jornadaConfig={stdMinDay:300,stdMinWeek:1500};
       if(!window.appData.employeeColors) window.appData.employeeColors={};
-      // Notificar al script principal para que actualice su referencia local
       if(typeof window._onFirebaseData === 'function') window._onFirebaseData(parsed);
-
       if(_firestoreLoaded){
-        // Notificación solo cuando es actualización en tiempo real (no la carga inicial)
         Swal.fire({toast:true,position:'top-end',icon:'info',
           title:'📡 Datos actualizados',text:'El admin ha publicado cambios.',
           showConfirmButton:false,timer:2500});
@@ -96,10 +84,9 @@ function startRealtimeListener(){
 
 // ── Cargar datos inicial ──────────────────────────────────────
 window.loadData = async function(){
-  // Intentamos cargar desde Firestore
   try {
-    const snap = await getDoc(DATA_DOC);
-    if(snap.exists()){
+    const snap = await DATA_DOC.get();
+    if(snap.exists){
       const d = snap.data();
       if(d && d.chunks){
         const parsed = JSON.parse(d.chunks.join(''));
@@ -111,14 +98,13 @@ window.loadData = async function(){
         }
       }
     } else {
-      // Primera vez: intentamos migrar desde localStorage
       const ls = localStorage.getItem('fairShift_v23_pro');
       if(ls && isAdmin){
         const parsed = JSON.parse(ls);
         if(parsed.employees && parsed.shifts){
           window.appData = parsed;
           if(typeof window._onFirebaseData==='function') window._onFirebaseData(parsed);
-          await window._firebaseSave(); // subimos a Firestore
+          await window._firebaseSave();
           Swal.fire({toast:true,position:'top-end',icon:'success',
             title:'✅ Datos migrados a la nube',showConfirmButton:false,timer:2500});
         }
@@ -126,7 +112,6 @@ window.loadData = async function(){
     }
   } catch(e){
     console.warn('Firestore load failed, using localStorage:', e);
-    // Fallback a localStorage
     const ls = localStorage.getItem('fairShift_v23_pro');
     if(ls){ try{ window.appData=JSON.parse(ls); }catch(_){} }
   }
@@ -135,12 +120,10 @@ window.loadData = async function(){
   _firestoreLoaded = true;
 };
 
-// ── Sistema de autenticación admin ───────────────────────────
+// ── Admin ─────────────────────────────────────────────────────
 window.checkAdminMode = function(){
-  // Comprobamos si ya hay sesión admin en esta pestaña
   if(sessionStorage.getItem('fairshift_admin') === ADMIN_PIN){
     _activateAdmin();
-    return;
   }
 };
 
@@ -155,8 +138,8 @@ function _activateAdmin(){
     badge.style.cssText='background:rgba(255,68,68,.1);color:#ff4444;border:1px solid rgba(255,68,68,.25)';
     badge.onclick = null;
   }
+  if(typeof updateSidebarAdminState==='function') updateSidebarAdminState();
   Swal.fire({toast:true,position:'top-end',icon:'success',title:'Modo Admin activado',showConfirmButton:false,timer:1500});
-  updateSidebarAdminState();
 }
 
 window.promptAdminLogin = function(){
@@ -191,11 +174,10 @@ window.logoutAdmin = function(){
     badge.style.cssText='background:var(--surface2);color:var(--text-3);border:1px solid var(--border)';
     badge.onclick = ()=>window.promptAdminLogin();
   }
+  if(typeof updateSidebarAdminState==='function') updateSidebarAdminState();
   Swal.fire({toast:true,position:'top-end',icon:'info',title:'Sesión admin cerrada',showConfirmButton:false,timer:1500});
-  updateSidebarAdminState();
 };
 
-// ── Sobreescribir factoryReset para limpiar también Firestore ─
 window.factoryResetCloud = async function(){
   if(!isAdmin){ Swal.fire('Sin permiso','Solo el admin puede hacer esto.','error'); return; }
   Swal.fire({title:'¿FACTORY RESET?',text:'Borrará TODO permanentemente de la nube.',icon:'warning',
@@ -203,14 +185,13 @@ window.factoryResetCloud = async function(){
     confirmButtonText:'SÍ, BORRAR TODO',cancelButtonText:'Cancelar'})
   .then(async r=>{
     if(r.isConfirmed){
-      await setDoc(DATA_DOC,{chunks:['{"employees":[],"shifts":[],"employeeColors":{},"jornadaConfig":{"stdMinDay":300,"stdMinWeek":1500}}'],updated:Date.now(),v:1});
+      await DATA_DOC.set({chunks:['{"employees":[],"shifts":[],"employeeColors":{},"jornadaConfig":{"stdMinDay":300,"stdMinWeek":1500}}'],updated:Date.now(),v:1});
       localStorage.clear();
       location.reload();
     }
   });
 };
 
-// ── Exportar backup (siempre disponible) ─────────────────────
 window.backupDataJSON = function(){
   const a=document.createElement('a');
   a.href='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(window.appData));
@@ -219,7 +200,6 @@ window.backupDataJSON = function(){
   Swal.fire({toast:true,position:'top-end',icon:'success',title:'Backup generado',showConfirmButton:false,timer:1500});
 };
 
-// ── Init: arranca cuando el DOM esté listo ────────────────────
 document.addEventListener('DOMContentLoaded', ()=>{
   window.checkAdminMode();
 });

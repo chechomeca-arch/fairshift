@@ -2402,11 +2402,11 @@ function closeWizard(){closeModal('rosterWizard');tempImportData=[];}
 function commitRoster(){
   const di=document.getElementById('weekStartDate').value;
   if(!di)return Swal.fire('Error','Fecha inicio requerida.','error');
-  const sd=new Date(di);let count=0;
+  const sd=strToLocalDate(di);let count=0;
   tempImportData.forEach(item=>{
     if(item.isNew&&!appData.employees.includes(item.employee)){appData.employees.push(item.employee);appData.employeeColors[item.employee]='#'+Math.floor(Math.random()*16777215).toString(16);}
     // ── CAMBIO: guardar entryTime automáticamente cuando existe ──
-    let ti=0;for(let i=0;i<7;i++){if(item.workDays[i]&&ti<item.extractedTimes.length){const time=item.extractedTimes[ti];const d=strToLocalDate(sd);d.setDate(d.getDate()+i);const ds=dateToStr(d);if(!appData.shifts.some(s=>s.employee===item.employee&&s.date===ds&&s.time===time)){const shift={id:Date.now()+Math.random(),employee:item.employee,date:ds,time};if(item.entryTimes&&item.entryTimes[ti]){shift.entryTime=item.entryTimes[ti];}appData.shifts.push(shift);count++;}ti++;}}
+    let ti=0;for(let i=0;i<7;i++){if(item.workDays[i]&&ti<item.extractedTimes.length){const time=item.extractedTimes[ti];const d=new Date(sd);d.setDate(d.getDate()+i);const ds=dateToStr(d);if(!appData.shifts.some(s=>s.employee===item.employee&&s.date===ds&&s.time===time)){const shift={id:Date.now()+Math.random(),employee:item.employee,date:ds,time};if(item.entryTimes&&item.entryTimes[ti]){shift.entryTime=item.entryTimes[ti];}appData.shifts.push(shift);count++;}ti++;}}
   });
   saveData();closeWizard();updateUI();Swal.fire('Hecho',count+' turnos importados.','success');
   document.getElementById('rawTextArea').value='';
